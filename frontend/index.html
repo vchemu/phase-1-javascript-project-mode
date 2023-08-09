@@ -1,50 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MeetYourBff</title>
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyPetFinder</title>
+    <link rel="stylesheet" href="main.css">
 </head>
 <body>
-  <header>
-    <h1>MeetYourBff.com</h1>
-    <nav>
-        <ul id="pet-list">
-            <li>Pet Name</li>
-            <li>Second Pet Name</li>
-            <li>And another</li>
-        </ul>
-    </nav>
-  </header>
+    <header class="header">
+        <h1 class="header-title">MyPetFinder</h1>
+        <nav class="nav">
+            <ul>
+                <li><a href="#">Home</a></li>
+       
+            </ul>
+        </nav>
+    </header>
+    
+    <div class="gallery" id="petGallery">
 
-  <main>
-		<div class="pet-details">
-			<h2 id="pet-name">Pet Name Inserted here</h2>
-			<img
-				id="pet-image"
-				alt="Pet Name Inserted here"
-				src="icons/image-placeholder.jpg"
-			/>
-			<p>
-				<em id="pet-description">Pet description here</em>
-			</p>
-    <div class="adoption-form" id="adoptionForm"></div>
-  </main>
+    </div>
+    </section>
+    
+    <footer class="footer">
+        <p>&copy; 2023 MyWebsite. All rights reserved.</p>
+    </footer>
+    <!--link to js file-->
+    <script src="main.js"></script>
 
-  <div id="chatbox">
-		<input type="text" id="chatInput" placeholder="Type your message">
-		<button onclick="sendMessage()">Send</button>
-	</div>
-	<div id="commentsSection">
-		<h3>Comments</h3>
-		<div id="commentsList"></div>
-		<form onsubmit="addComment(); return false;">
-			<input type="text" id="commentInput" placeholder="Enter your comment" required>
-			<button type="submit">Add Comment</button>
-		</form>
-	</div>
-
-  <script src="js/script.js" type="module"></script>
 </body>
 </html>

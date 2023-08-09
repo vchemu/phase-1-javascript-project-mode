@@ -65,7 +65,15 @@ function displayAdoptionForm() {
   adoptionFormContainer.innerHTML = `
     <h3>Adoption Form</h3>
     <form>
-      <!-- Add form fields here -->
+      <label for="name">Name:</label>
+      <input typr="text" id="name" required>
+
+      <label for="phone">Phone:</label>
+      <input type="tel" id="phone" required>
+
+      <label for="message">Message:</label>
+      <textarea id="message" required></textarea>
+
       <button type="submit">Submit</button>
     </form>
   `;
