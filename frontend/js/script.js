@@ -1,98 +1,102 @@
-// Function to fetch pet data from the API
-async function fetchPets() {
-  try {
-    const response = await fetch('https://api.petfinder.com/v2/animals', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        apikey: XNEfj5Edft0EhlYmaAGmgfuW47PYZSShUQqnj4Tu1ubaRqPLaX,
-        objectType: 'animals',
-        objectAction: 'publicSearch',
-        search: {
-          resultStart: 0,
-          resultLimit: 12,
-        },
-        fields: ['animalName', 'animalSpecies', 'animalBreed', 'animalAgeString', 'animalDescription', 'animalTemperament', 'animalPersonality', 'animalPurpose'],
-      }),
+//api token
+const access_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiJYUVRKTXFPRnpFTFg5ek5kMkpXS3l6TzhkTWVubTI1VFZnaGNjYkltZWY0RnNyMFMzNCIsImp0aSI6IjM5ZjU0ZDM1Y2E4ZjkyMDkwYWIxOTc1YjNmNTk3OTQ0M2ZhMzc2NDlkMjY4MmIxNTg1YmNmOTNjZWRiMTRkNDNjOGIxMzM2NzEyYWMzZTUzIiwiaWF0IjoxNjkxNTE0Njg5LCJuYmYiOjE2OTE1MTQ2ODksImV4cCI6MTY5MTUxODI4OSwic3ViIjoiIiwic2NvcGVzIjpbXX0.BmXVqqUSDdEj7h0XswPQYI7SQ7LJ5dVgvE_JM3YM804FrQR_KuRUJknPgT66N_KgjRKMj1zWPVLRZs-ieI9mqQ2NzQiuZMJaTmVOcIw6ChUWF6TnVIcOsDh6sAZmjD2lOyp6wqX_S4gc9isEHPfLIjMjp5jqJ1FQC11I--OqGQsxF8qFXbd35PKo4gujGzrBie7mIhod5eZUZaCEzS3oIuX0Le7Haisg7SDkUW0fTVLERDQ6-vst_G-iMUZw-oQCwLvP4_R1yi8YWl7cfWLOjeeojwR_Co99avhhs8lzni0MM9T1jRBweVFMF2yjIKG1jKuZCeIUvysY1aQ62vf_eA";
+
+//Initialize liked pets and like counts from local storage
+let likedPets = JSON.parse(localStorage.getItem('likedPets')) || {};
+let likeCounts = JSON.parse(localStorage.getItem('likeCounts')) || {};
+
+// Construct the request headers with the access token
+const headers = new Headers();
+headers.append('Authorization', `Bearer ${access_token}`);
+
+// Construct the query parameters
+const queryParams = new URLSearchParams();
+queryParams.append('type', 'dog'); 
+queryParams.append('breed', 'pug');
+queryParams.append('size', 'small');
+queryParams.append('gender', 'male');
+queryParams.append('age', 'baby'); 
+queryParams.append('limit', '15'); 
+
+//field expansion for photos and description
+queryParams.append('fields', 'photos,description');
+
+// Construct the full URL with query parameters
+const apiUrl = `https://api.petfinder.com/v2/animals?${queryParams.toString()}`;
+
+// Make the GET request to retrieve animals
+fetch(apiUrl, {
+  method: 'GET',
+  headers: headers
+})
+  .then(response => response.json())
+  .then(data => {
+    const petGallery = document.getElementById('petGallery');
+
+    // Process the data and populate the HTML
+    data.animals.forEach(animal => {
+      const petCard = document.createElement('div');
+      petCard.className = 'pet-card';
+      petCard.innerHTML = `
+        <img src="${animal.photos[0]?.medium}" alt="${animal.name}">
+        <h2>Name: ${animal.name}</h2>
+        <p>Type: ${animal.type}</p>
+        <p>Breed: ${animal.breeds.primary}</p>
+        <p>Age: ${animal.age}</p>
+        <p>Description: ${animal.description}</p>
+        <button class="like-button" data-pet-id="${animal.id}">Like</button>
+        <span class="likes-count">0</span>
+      `;
+    
+      const petGallery = document.getElementById('petGallery');
+      petGallery.appendChild(petCard);
+    
+
+      const likeButton = petCard.querySelector('.like-button');
+      const likesCountElement = petCard.querySelector('.likes-count');
+
+      likeButton.addEventListener('click', () => {
+        if (!likedPets[animal.id]) {
+          likedPets[animal.id] = true;
+          likeCounts[animal.id] = (likeCounts[animal.id] || 0) + 1;
+        } else {
+          likedPets[animal.id] = false;
+          likeCounts[animal.id] = (likeCounts[animal.id] || 1) - 1;
+        }
+
+        localStorage.setItem('likedPets', JSON.stringify(likedPets));
+        localStorage.setItem('likeCounts', JSON.stringify(likeCounts));
+
+        likeButton.classList.toggle('liked', likedPets[animal.id]);
+        likeButton.textContent = likedPets[animal.id] ? 'Liked' : 'Like';
+        likesCountElement.textContent = likeCounts[animal.id];
+      });
+      const observer = new MutationObserver(mutationsList => {
+        for (const mutation of mutationsList) {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+            // Liked state has changed
+            const likeButton = mutation.target;
+            const isLiked = likeButton.classList.contains('liked');
+            const petId = likeButton.dataset.petId;
+      
+            // Perform any actions you want when the liked state changes
+            console.log(`Liked state changed for pet ${petId}. Liked: ${isLiked}`);
+          }
+        }
+      });
+      
+      // Observe changes to the class attribute of all like buttons
+      const likeButtons = document.querySelectorAll('.like-button');
+      likeButtons.forEach(likeButton => {
+        observer.observe(likeButton, { attributes: true });
+      });
     });
-    const data = await response.json();
-    return data.data;
-  } catch (error) {
-    console.error('Error fetching pet data:', error);
-    return [];
-  }
-}
-
-// Function to display the list of available pets
-async function displayPetList() {
-  const petListContainer = document.getElementById('petList');
-  petListContainer.innerHTML = '';
-
-  const pets = await fetchPets();
-
-  pets.forEach((pet) => {
-    const petItem = document.createElement('div');
-    petItem.classList.add('pet-item');
-    petItem.innerHTML = `
-      <h2>${pet.animalName}</h2>
-      <p>Type: ${pet.animalSpecies}</p>
-      <p>Breed: ${pet.animalBreed}</p>
-      <p>Age: ${pet.animalAgeString}</p>
-      <button onclick="displayPetDetails('${pet.animalDescription}', '${pet.animalTemperament}', '${pet.animalPersonality}', '${pet.animalPurpose}')">View Details</button>
-    `;
-    petListContainer.appendChild(petItem);
+  })
+  .catch(error => {
+    console.error('Error fetching animals:', error);
   });
-}
 
-// Function to display pet details
-function displayPetDetails(description, temperament, personality, purpose) {
-  const petDetailsContainer = document.getElementById('petDetails');
-  petDetailsContainer.innerHTML = `
-    <h2>Pet Details</h2>
-    <p>Description: ${description}</p>
-    <p>Temperament: ${temperament}</p>
-    <p>Personality: ${personality}</p>
-    <p>Purpose: ${purpose}</p>
-    <button onclick="displayAdoptionForm()">Adopt</button>
-  `;
-}
 
-// Function to display the adoption form
-function displayAdoptionForm() {
-  const adoptionFormContainer = document.getElementById('adoptionForm');
-  adoptionFormContainer.innerHTML = `
-    <h3>Adoption Form</h3>
-    <form>
-      <label for="name">Name:</label>
-      <input typr="text" id="name" required>
 
-      <label for="phone">Phone:</label>
-      <input type="tel" id="phone" required>
 
-      <label for="message">Message:</label>
-      <textarea id="message" required></textarea>
 
-      <button type="submit">Submit</button>
-    </form>
-  `;
-}
-
-// Function to create a chatbox
-function createChatbox() {
-  const chatboxContainer = document.getElementById('chatbox');
-  chatboxContainer.innerHTML = `
-    <h3>Chatbox</h3>
-    <!-- Add chatbox content and functionality here -->
-  `;
-}
-
-// Initialize the app
-async function initApp() {
-  await displayPetList();
-  createChatbox();
-}
-
-// Call initApp when the DOM is ready
-document.addEventListener('DOMContentLoaded', initApp);
